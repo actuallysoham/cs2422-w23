@@ -1,0 +1,8 @@
+.slides h2, .slides h1, .slides h3 { text-transform: none} .slides section { text-align:left; } .slides h2 { margin-bottom: 100px; }
+.reveal .footer, .reveal .footer a { font-size: 14px; }
+.reveal .footer { color: rgba(255,255,255,0.5); } 
+.reveal .footer a { inherit; }
+hr { border: 1px solid rgba(255,255,255,0.5); color: rgba(255,255,255,0.5); margin: 0; padding: 0;}
+.reveal h1, .reveal h2 { color: #e3cc2b; }
+.reveal img.ok, .reveal img.not-ok { border: none; background-color: inherit; height: 40px; vertical-align: middle; margin-left: 20px;}
+.reveal .bordered { padding:5px; border: solid 1px white; }

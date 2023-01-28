@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>CS2422</title>
+
+    <link rel="icon" type="image/png" href="./ashoka_logo_only.png">
+    <meta name="description" content="Software Debugging">
+    <meta name="author" content="Sudheendra Hangal ">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="stylesheet" href="css/cs2422.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div id="myLogo" style="background: url('./ashoka_logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+<div class="reveal">
+
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section>
+            <h2>CS 2422: Software Debugging</h2>
+            <br/>
+            <h4>Class 1</h4>
+        </section>
+
+        <section data-markdown>
+            ## About CS2422
+
+            <p> 2-unit CS elective course
+            <p> Pre-requisite: 2 courses in programming
+            <p> Assumed that you can pick up a language on your own
+            <p> Assumed that you can learn an IDE quickly
+            <p> Assumed that have a mental model of a CPU (memory, registers, etc.)
+        </section>
+
+        <section>
+            <h2> Course expectations </h2>
+            <p> You should:
+            <p> Be very comfortable with programming (in at least one language)</p>
+            <p> Bring your own laptop (Mac/Windows/Linux)</p>
+            <p> Be familiar with Linux </p>
+            <p> Review slides and materials after the class</p>
+            <p> Expect to spend at least 10 hours per week </p>
+        </section>
+
+        <section>
+            <h2> About me </h2>
+            <p> Spent 15 years building computer systems (microprocessors, hardware, compilers)
+            <p> Subsequently worked in HCI (ish) fields
+            <p> Based out of Bangalore where I lead a startup (Amuse Labs) and work on puzzle products used by global
+                publishers
+            <p> Associated with Ashoka CS and Trivedi Center for Political Data from the beginning (2013)
+        </section>
+
+        <section data-markdown>
+            # Why this course?
+        </section>
+
+        <section>
+            <h2> 1. Lack of debugging pedagogy</h2>
+            <p class="fragment">Not required coursework in any CS curriculum</p>
+            <p class="fragment">No systematic training or certification</p>
+            <p class="fragment">Hardly any standard textbooks or reference materials</p>
+        </section>
+
+        <section>
+            <h2> 2. Debugging is one of the most highly valued CS skills in the industry</h2>
+            <p class="fragment">A significant portion of a professional programmer's time is spent on debugging (their
+                own or others' programs)</p>
+            <p class="fragment">Debugging skills often limit the complexity of things you can build</p>
+            <p class="fragment">Higher pay for on-call engineers who can troubleshoot problems</p>
+        </section>
+
+        <section>
+            <h2> 3. Gap between research and practice</h2>
+            <p class="fragment"> Many good ideas in research... but relatively few are used in practice </p>
+            <p class="fragment"> (However, striking contrast between hardware and software) </p>
+            <p class="fragment"> "printf debugging" is still widely prevalent (more on this later)</p>
+            <p class="fragment"> Debuggers of today are not that different from dbx on VAX/Ultrix and TurboC ~ 30 years
+                ago!</p>
+        </section>
+
+        <section>
+            <h2> 4. Good topic for Ph.D. research</h2>
+            <p class="fragment">Much low-hanging fruit<br/>
+                e.g. at the intersection of hardware and software</p>
+            <p class="fragment">Real-world impact</p>
+            <p class="fragment">Huge cost of bugs: $59bn est. in 2005, much higher now</p>
+            <p class="fragment">Lots of novelty and innovation possible</p>
+        </section>
+
+        <section>
+            <h2> 5. Possible topic for a startup </h2>
+            <p> Take X, the latest trend.
+            <p> Debugging X is bound to be of interest and value
+            <p class="fragment"> Example: debugging memory management
+            <p class="fragment"> Example: debugging software defined networks
+            <p class="fragment"> Example: debugging AI systems
+        </section>
+
+        <section>
+            <img style="height:400px" src="images/hastings.jpg"/>
+            <br/>
+            <p class="fragment">Reed Hastings, CEO/founder of Netflix ... </p>
+            <p class="fragment">... and Pure Software</p>
+            <hr/>
+            <span class="footer">James Duncan Davidson/O'Reilly Media, Inc.
+            &nbsp;&nbsp;&nbsp;<a href="https://alumni.stanford.edu/get/page/magazine/article/?article_id=33351">Article</a></span>
+            <aside class="notes">Btw, puresoftware.com goes to some company in Noida</aside>
+        </section>
+
+        <section>
+            <h2>6. Narrowing individual differences</h2>
+            <p> I believe there is 3X differential between good and bad debuggers/programmers. (Similar to doctors)</p>
+            <p> Could be due to cognitive differences: The way you think about the program (research needed!)</p>
+            <p> Great tools do not necessarily make us great at debugging
+            <p>
+        </section>
+
+        <section>
+            <h2> 7. A core CS skill</h2>
+            <p> Debugging is a skill that makes for a "real" computer scientist</p>
+            <p> Enjoy the chase of a bug (like detective work)</p>
+            <p> Many of our most memorable professional memories are of tricky, hard to find bugs and what they taught
+                us</p>
+        </section>
+
+        <section>
+            <h2>Learning objectives</h2>
+            <p class="fragment"> Realize that debugging is a necessary CS skill</p>
+            <p class="fragment"> Learn to think systematically about debugging</p>
+            <p class="fragment"> Become expert at using debugging tools</p>
+            <p class="fragment"> Think about writing your own debugging tools</p>
+            <p class="fragment"> Think about design for debug in your programs</p>
+            <p class="fragment"> Get some exposure to research in debugging</p>
+            <p class="fragment"> Understand basics of hardware debugging (if time permits)</p>
+        </section>
+
+        <section>
+            <h2>Some credible conferences</h2>
+            <p>ICSE, ISSTA
+            <p>PLDI, FSE/ESEC
+            <p>OOPSLA, SPLASH, ECOOP
+            <p>CHI
+            <p>MSR
+            <p>SP&E (Software Practice and Experience)
+            <p>IEEE Transactions on Software Engineering (TSE)
+        </section>
+
+        <section>
+            <h2> Administrative details</h2>
+        </section>
+
+        <section>
+            <h1>Course details</h1>
+            <p>Classes held every Th-F 3-4.30pm</p>
+            <p>(Tentative) Alternate weeks on Zoom
+            <p>TAs: Akshat Singh, Soham De </p>
+            <p>Office hours: SH: Thursdays 6-7pm in my office (AC04 7th floor) or on Zoom</p>
+            <p>Office hours: AS: Wed 5-6pm, SD: Mon 6-7pm </p>
+            <p>Use <a href="mailto:cs2422-staff@ashoka.edu.in">cs2422-staff@ashoka.edu.in</a> for all matters related to
+                this course</p>
+            <p>Add/drop/course enrolment rules per OAA</p>
+            <p>Course website: (Not live yet) </p>
+        </section>
+
+        <section>
+            <h2> Course Grading</h2>
+            <p> Total points: 200 </p>
+            <p> Attendance: 60 points </p>
+            <p> Assignments: 80 points (Presentations and paper reviews)</p>
+            <p> Final exam: 60 points (date TBD, but after Holi?)
+        </section>
+
+        <section>
+            <h2> Classes </h2>
+            <p> Will start at 3.05 pm Th-F </p>
+            <p> Stay until the end for attendance credit </p>
+            <p> When in class: Drinks ok. In-classroom dining not ok!</p>
+            <p> Mobile phones must be off or silent </p>
+        </section>
+
+        <section>
+            <h2> No academic dishonesty! </h2>
+            <p> Leads directly to F grade.</p>
+            <p> When in doubt if something is ok, ask </p>
+        </section>
+
+        <section>
+            <h2>A debugging book</h2>
+            <div style="text-align:center">
+                <p>Why Programs Fail </p>
+                <img style="height:350px" src="images/wpf.jpeg"/>
+                <p>by Andreas Zeller</p>
+            </div>
+        </section>
+
+        <section>
+            <h2> Survey of the class </h2>
+        </section>
+
+        <section>
+            <h2>Assignment 1: Bug Log</h2>
+            <p> Maintain a bug log (online or offline) for the rest of this semester
+            <p> Track at least Project, Bug summary, Date, How found, How fixed, Tags
+            <p> Submit at the time of the final
+            <p> Expect to see at least 10 bug reports per person
+            <p class="fragment"> Borrow your friends' bugs if you have to
+            <p class="fragment"> (But you must understand the bug completely. No repeats.)
+        </section>
+
+        <section>
+            <h2>Assignment 2: Paper review</h2>
+            <div style="font-size:75%">
+                <p>Review the paper "<a href="http://thomas-zimmermann.com/publications/files/bettenburg-fse-2008.pdf">What
+                    Makes a Good Bug Report?</a>" by Bettenburg et al (FSE 2008)
+                <p>Guideline: About 500 words. Summarize the paper in the first 2 paragraphs, then give your reactions
+                    to it (what you like and don't like about the work) as if you were going to decide whether to accept
+                    the paper for publication. Due before class next Friday, Feb. 3 in Google classroom.
+                    <img src="images/bug-report-paper.png" style="height:400px"/>
+            </div>
+        </section>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+
+            // Full list of configuration options available at:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: false,
+                history: true,
+                center: true,
+                slideNumber: true,
+
+                transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+                // Optional reveal.js plugins
+                dependencies: [
+                    {
+                        src: 'lib/js/classList.js', condition: function () {
+                            return !document.body.classList;
+                        }
+                    },
+                    {
+                        src: 'plugin/markdown/marked.js', condition: function () {
+                            return !!document.querySelector('[data-markdown]');
+                        }
+                    },
+                    {
+                        src: 'plugin/markdown/markdown.js', condition: function () {
+                            return !!document.querySelector('[data-markdown]');
+                        }
+                    },
+                    {
+                        src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+                            hljs.initHighlightingOnLoad();
+                        }
+                    },
+                    {src: 'plugin/zoom-js/zoom.js', async: true},
+                    {src: 'plugin/notes/notes.js', async: true}
+                ]
+            });
+        </script>
+</body>
+</html>
