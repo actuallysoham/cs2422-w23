@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>CS402</title>
+    <link rel="icon" type="image/png" href="../images//ashoka-logo-only.png">
+
+    <meta name="description" content="Software Debugging">
+    <meta name="author" content="Sudheendra Hangal ">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="stylesheet" href="css/cs2422.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section>
+            <h2>CS 2422: Software Debugging</h2>
+            <br/>
+            <h4>Class 2</h4>
+        </section>
+
+        <section>
+            <h2>Course matters</h2>
+            <p>Website: https://sites.google.com/ashoka.edu.in/cs2422/</p>
+            <p>SH office hours: Thursdays 6-7pm, AC04-723 (or Zoom)
+            <p>AS office hours: Wednesdays 5-6PM (AC04-WS708)
+            <p>SD office hours: Monday 6-7PM (AC04-WS708)
+            <p>Reading assignment due tomorrow before class
+        </section>
+
+        <section>
+            <h2>Bug log</h2>
+            <p>Do gather interesting/subtle examples
+            <p>Do gather non-trivial bugs (on which you spend say, > 5 minutes)
+            <p>Do gather bugs that you did not fix, but worked around or gave up on
+            <p>Develop and refine your tagging system as you go along
+            <p>Keep a pointer to the code/issue if possible
+            <aside class="notes">Use Knuth's categories as a guideline</aside>
+        </section>
+
+        <section>
+            <h2>Bug log</h2>
+            <p>Don't gather software installation problems (Windows, Wordpress, packages...) Prefer code level bugs.
+            <p>Don't gather RFEs
+            <p>Don't gather simple fixes like color or message change
+            <p>Don't dredge up reports from the ancient past (unless they are very interesting)
+        </section>
+
+        <section>
+            <h2> A bit of history </h2>
+        </section>
+
+        <section>
+            <h2> How did the term bug originate? </h2>
+        </section>
+
+        <section>
+            <img style="width:100%" src="images/mark1.jpg"/>
+        </section>
+
+        <section>
+            <img style="width:100%" src="images/mark1-2.jpg"/>
+        </section>
+
+        <section>
+            <img style="width:100%" src="images/papertape.jpg"/>
+        </section>
+
+        <section>
+            <img style="width:100%" src="images/time.jpg"/>
+        </section>
+
+        <section>
+            <h2>Grace Hopper</h2>
+            <p>Early computer pioneer</p>
+            <p>Got a Ph.D. from Yale in Math in 1934</p>
+            <p>Got a job with the Navy and was sent to program Mark-1 computer at Harvard</p>
+        </section>
+
+        <section>
+            <a href="https://www.youtube.com/watch?v=oE2uls6iIEU"><img style="width:100%" src="images/gh.png"/></a>
+            <br/>
+            <a href="https://www.youtube.com/watch?v=oE2uls6iIEU">https://www.youtube.com/watch?v=oE2uls6iIEU</a>
+        </section>
+
+        <section>
+            <img style="width:100%" src="images/gh-bug.jpg"/>
+        </section>
+
+        <section>
+            <a href="http://edison.rutgers.edu/NamesSearch/SingleDoc.php?DocId=LB003487"><img style="height:90%"
+                                                                                              src="images/edison.jpg"/></a>
+        </section>
+
+        <section>
+            <i>The first step is an intuition—and comes with a burst, then difficulties arise. This thing gives out and
+                then that–“Bugs,” as such little faults and difficulties are called, show themselves.</i>
+            <br/>
+            <br/>
+            T. A. Edison, November 13, 1878
+
+            <br/>
+            <br/>
+            <div class="position:fixed;bottom:40px;left:200px; z-index:2000;background-color: red;width:200px;"><a
+                    style="font-size:50%" href="https://edisondigital.rutgers.edu/document/D7821ZAO">Rutgers University
+                Archives/Thomas Edison National Historical Park</a></div>
+        </section>
+
+        <section>
+            <h2>Terminology</h2>
+            <p> "Bug" is probably a bad term. ("A bug has crept in", as if on its own)
+            <p> "Defect" and "Fault" are often used for hardware (or low level system) error
+            <p> "Flaw", "Error", "Issue", "Failure", "Smell",...
+            <p> Some people use the word infection (I don't like it.)
+            <p> We'll just generically refer to bugs...
+        </section>
+
+        <section>
+
+            <i>"In the meantime, I had another linguistic shock: I became a member of the ACM, shortly before its
+                Communications started to appear. Prior to that I had hardly had any exposure to the foreign literature.
+                What I then read was written in a way so totally different from what I, in relative isolation, had
+                acquired as my own habit, that I was absolutely flabbergasted. The heavily anthropomorphic terminology
+                was totally new for me, and hardly compatible with my cultural roots; so was the animism betrayed by the
+                term "bug": we had never called a bug a bug, we had always called it an error."</i>
+            <br/>
+            <br/>
+            - <a href="https://www.cs.utexas.edu/users/EWD/transcriptions/EWD07xx/EWD709.html">My Hopes for Computer
+            Science</a>, E.W. Dijkstra (4th ICSE, 1979)
+
+        </section>
+
+        <section>
+            <i>"We could, for instance, begin with cleaning up our language by no longer calling a bug a bug but by
+                calling it an error. It is much more honest because it squarely puts the blame where it belongs, viz.
+                with the programmer who made the error. The animistic metaphor of the bug that maliciously sneaked in
+                while the programmer was not looking is intellectually dishonest as it disguises that the error is the
+                programmer's own creation. The nice thing of this simple change of vocabulary is that it has such a
+                profound effect: while, before, a program with only one bug used to be "almost correct", afterwards a
+                program with an error is just "wrong" (because in error)."</i><br/>
+            - <a href="https://www.cs.utexas.edu/~EWD/transcriptions/EWD10xx/EWD1036.html">On the cruelty of really
+            teaching computing science</a>, E.W. Dijkstra, 1988
+        </section>
+
+        <section>
+            <h2>Six Stages of Debugging</h2>
+            <p class="fragment">That can't happen.
+            <p class="fragment">That doesn't happen on my machine.
+            <p class="fragment">That shouldn't happen.
+            <p class="fragment">Why does that happen?
+            <p class="fragment">Oh, I see.
+            <p class="fragment">How did that ever work?
+            <hr/>
+            <p class="footer">
+                <!-- also at http://plasmasturm.org/log/6debug/ -->
+                <a href="https://web.archive.org/web/20051023090428/http://www.68k.org/~jrc/old-blog/archives/000198.html">Original source</a> (?)
+            </p>
+        </section>
+
+        <section>
+            <h2>Bug lifecycle</h2>
+        </section>
+
+        <section>
+            <img src="images/github.png"/>
+        </section>
+
+        <section>
+            <img src="images/github1.png"/>
+        </section>
+
+        <section>
+            <h2>Bug/Issue tracking tools</h2>
+            <p>e.g. Bugzilla, github, trac, etc.</p>
+            <p>Slightly overlap with project management tools</p>
+            <p>Issue source could be internal tester or external user
+            <p>Assigned to and evaluated by a developer
+            <p>Captures long-term record of bugs... much better than email
+        </section>
+
+        <section>
+            <h2>Bug lifecycle</h2>
+            <img src="images/bug-lifecycle.png"/>
+        </section>
+
+        <section>
+            <h2> Some special situations</h2>
+            <p> Wontfix
+            <p> Duplicate
+            <p> Unreproducible
+            <p> Reopened
+            <p> Fixed, waiting for test
+            <p> RFE (Request for Enhancement)
+            <p> ECO (Engineering Change Order)
+        </section>
+
+        <section>
+            <h2>How to report a bug?</h2>
+            <p> Provide enough information to reproduce
+            <p> Be specific about the environment - OS, version, etc.
+            <p> Simplify to the extent possible
+            <p> Detail, to the extent possible (e.g. error messages, stack traces, what the user was doing, and other context)
+            <p> Core dumps (memory state at program crash)
+            <p> Search for the error message
+        </section>
+
+        <section>
+            <h2>Social Issues</h2>
+            <p> Submitter and developer may not be known to each other
+            <p> Very different conceptual models of the software
+            <p> Maintain courtesy and trust
+            <p> Don't fingerpoint, avoid typecasting people
+            <p> Developer should always thank the person who found the bug
+            <p> Developer should never close a bug
+        </section>
+
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+        // Full list of configuration options available at:
+        // https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize({
+            controls: true,
+            progress: false,
+            history: true,
+            center: true,
+            slideNumber: true,
+
+            transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+            // Optional reveal.js plugins
+            dependencies: [
+                {
+                    src: 'lib/js/classList.js', condition: function () {
+                        return !document.body.classList;
+                    }
+                },
+                {
+                    src: 'plugin/markdown/marked.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/markdown/markdown.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+                        hljs.initHighlightingOnLoad();
+                    }
+                },
+                {src: 'plugin/zoom-js/zoom.js', async: true},
+                {src: 'plugin/notes/notes.js', async: true}
+            ]
+        });
+
+    </script>
+
+</body>
+</html>
