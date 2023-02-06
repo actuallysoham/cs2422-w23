@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>CS2422</title>
+
+    <meta name="description" content="Software Debugging">
+    <link rel="icon" type="image/png" href="../images//ashoka-logo-only.png">
+    <meta name="author" content="Sudheendra Hangal ">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <link rel="stylesheet" href="css/cs2422.css">
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section>
+            <h2>CS 2422: Software Debugging</h2>
+            <br/>
+            <h4>Class 3</h4>
+        </section>
+
+        <section>
+            <h2>Course Topics </h2>
+            <div style="font-size: 75%">
+                <p> Bug lifecycle
+                <p> Bug patterns
+                <p> Debugging tools (dynamic and static)
+                <p> Testing, Logging
+                <p> How debuggers work
+                <p> Automatic debugging
+                <p> Hardware debugging
+            </div>
+        </section>
+
+        <section>
+            <h2>Factors in bug management</h2>
+            <div style="font-size:80%">
+                <p> Estimate of time taken to fix the error
+                <p> Who decides the priority/severity?
+                <p> When can the priority be changed?
+                <p> Should bugs be merged?
+                <p> Not all bugs fixed before every release (Windows 2000 had <a
+                        href="http://www.zdnet.com/article/bugfest-win2000-has-63000-defects/">63,000 bugs</a> at time
+                    of
+                    release)
+                <p> Clutter: The problem with having a lot of open bugs is they have to be constantly reviewed
+                <aside class="notes">Go into git branching if needed</aside>
+                <p>Dashboards may be built on top of the bug system
+                <p>Bug reporting rate may be an important criterion for release readiness
+            </div>
+        </section>
+
+
+        <section>
+            <h2>An issue template</h2>
+            <img src="images/github-template1.jpg">
+        </section>
+
+        <section>
+            <h2>An issue template</h2>
+            <img src="images/github-template2.jpg">
+        </section>
+
+
+        <section>
+            <h2>Classes of bugs</h2>
+        </section>
+        <section>
+            <h2>The errors of TeX</h2>
+            <img style="height:300px" src="images/knuth.jpg"/>
+            <p> See <a href="pdf/errorlog.pdf">The errors of TeX</a>" (TeXdoc.net)
+            <p> Also read "<a href="pdf/tb26knut.pdf">Notes on the errors of TeX</a>" (tug.org)
+        </section>
+
+        <section>
+            <h2>Knuth's classification</h2>
+            <div style="font-size:75%;width:40%;display:inline-block">
+                <p>A Algorithmic Anomaly
+                <p>B Blunder, Botch
+                <p>C Cleanup for Consistency
+                <p>D Datastructure Debacle
+                <p>E Efficiency Enhancement
+                <p>F Forgotten Function
+                <p>G Generalization, Growth
+                <p>I Interactive Improvement
+            </div>
+
+            <div style="font-size:75%;width:40%;margin-left:10%;display:inline-block">
+                <p>L Language Liability
+                <p>M Mismatch between Modules
+                <p>P Promotion of Portability
+                <p>Q Quest for Quality
+                <p>R Reinforced Robustness
+                <p>S Surprising Scenario
+                <p>T Trivial Typo
+            </div>
+        </section>
+
+        <section>
+            <h2>Assignment 3</h2>
+            <p>In pairs of 2, review a debugger
+            <p>Read up on and experiment with ALL features (incl. advanced features)
+            <p>Prepare a chapter summarizing the features. Include screenshots. Submit as Google doc.
+            <p>Due on Feb 16, along with a demo to the class (7-8 minutes)
+            <p>Report in 10-pt Arial, single-spaced, 1-column
+            <p>Give a title and author names
+        </section>
+
+        <section>
+            <h2>Assignment 3</h2>
+            <p>Some suggestions follow (not exhaustive)
+            <p>Don't reproduce the manual
+            <p>Try out features with illustrative programs
+        </section>
+
+        <section>
+            <h2>Connecting to a target program</h2>
+            <p>Can the debugger launch a program?
+            <p>How does it get command line/environment parameters?
+            <p>Can it debug a running target? How does it connect?
+            <p>Can it debug a target on another machine?
+            <p>Any pre-requisites for the target program being debugged?
+        </section>
+
+        <section>
+            <h2>Controlling a target program</h2>
+            <p>How can the program be stopped?
+            <p>How can the program be stepped?
+            <p>How does it handle a program crash/exception?
+            <p>What operations are possible when the program is stopped?
+            <p>Can the debugger change the state of the program?
+            <aside class="notes">Can it be stopped on exception? Can it be stepped backwards?</aside>
+        </section>
+
+        <section>
+            <h2>Examining the program</h2>
+            <p>What can you do when the program is stopped?
+            <p>Can the program be traced?
+            <p>Can code be injected into the program?
+            <p>Can changes be loaded into a running program?
+            <p>Any special support for logs?
+        </section>
+
+        <section>
+            <h2>Multi-threading</h2>
+            <p>How does the debugger handle threads?
+            <p>Does it help detect deadlocks/races?
+            <p>Does it help capture/reproduce thread schedules?
+        </section>
+
+        <section>
+            <h2>Performance</h2>
+            <p>Does the tool help optimize memory usage?
+            <p>Any support to help understand performance problems?
+        </section>
+
+        <section>
+            <h2>User interface</h2>
+            <p>Graphical or command line
+            <p>Any special UI features?
+            <p>Can you save common debugging operations?
+            <p>Does it connect target program to source code?
+            <p>Visualization?
+        </section>
+
+        <section>
+            <h2>Advanced features</h2>
+            <p>Does it help with memory errors?
+            <p>Any language specific features?
+            <p>Code coverage analysis?
+        </section>
+
+        <section>
+            <h2>Debugging strategies</h2>
+        </section>
+
+        <section>
+            <h2>Key questions</h2>
+            <p>How repeatable is the bug?</p>
+            <p>How cheap is experimentation?<br/>
+                - How long does it take to occur?<br/>
+                - How easy is the environment to set up?<br/>
+            <p>Can the problematic module be isolated/simplified/reduced in size?
+            <p>How is the error detected?<br/>
+                - User sees external manifestation<br/>
+                - Developer probes internal program values in debugger<br/>
+        </section>
+
+        <section>
+            <h2>Binary search</h2>
+            <p>Very important way to narrow down bugs</p>
+            <p>Generic search strategy</p>
+            <p>Depends on clear detection of error</p>
+            <p>Depends on relatively localized error</p>
+            <p>Takes log n steps</p>
+        </section>
+
+        <section>
+            <h2>Binary search</h2>
+            <p>For example:<br/>
+                - Program state is ok at start<br/>
+                - Program state is not ok at crash<br/>
+            <p> Apply binary search to probe if state is ok (somewhere) in the middle</p>
+            <p> - could use debugger or logging to see intermediate values</p>
+            <p> - If ok, search between [middle .. not ok], otherwise search [ok .. middle]</p>
+            <p>Use frequent re-starts (if possible)</p>
+        </section>
+
+        <section>
+            <h2>Binary search benefits</h2>
+            <p>Predictable and bounded time to resolution</p>
+            <p>Generally better than ad-hoc methods, esp. for difficult bugs</p>
+            <p>Keep track of previous probes' results</p>
+            <p>Disable breakpoints in areas of the code that are ok</p>
+            <aside class="notes">like 20 Qs</aside>
+        </section>
+
+        <section>
+            <h2>More complex scenarios</h2>
+            <p>Error may not be easily reproducible. In these cases:</p>
+            <p>More stringent conditions for detecting ok/not-ok</p>
+            e.g., ok if passes for > 10 runs</p>
+            <p>Add more logging along the way
+            <p>Put some debug statements directly in the program (usually perturbs the program less than debugger controls)</p>
+        </section>
+
+        <section>
+            <h2>More complex scenarios</h2>
+            <p>Each rerun may take time</p>
+            <p>Try to <i>memoize</i> state of computation (e.g. serialize or pickle objects)</p>
+            <p>Try to isolate into a small, controllable test-bench</p>
+            <p>e.g, from a multi-threaded to a single-threaded env.</p>
+            <p>Keep a log book for complex errors</p>
+            <p>Control the experiment: Keep parameters <i>exactly</i> the same except for the control</p>
+        </section>
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+        // Full list of configuration options available at:
+        // https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize({
+            controls: true,
+            progress: false,
+            history: true,
+            center: true,
+            slideNumber: true,
+
+            transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+            // Optional reveal.js plugins
+            dependencies: [
+                {
+                    src: 'lib/js/classList.js', condition: function () {
+                        return !document.body.classList;
+                    }
+                },
+                {
+                    src: 'plugin/markdown/marked.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/markdown/markdown.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+                        hljs.initHighlightingOnLoad();
+                    }
+                },
+                {src: 'plugin/zoom-js/zoom.js', async: true},
+                {src: 'plugin/notes/notes.js', async: true}
+            ]
+        });
+
+    </script>
+
+</body>
+</html>
