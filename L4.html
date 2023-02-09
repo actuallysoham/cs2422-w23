@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>CS2422</title>
+    <link rel="icon" type="image/png" href="../images//ashoka-logo-only.png">
+
+    <meta name="description" content="Software Debugging">
+    <meta name="author" content="Sudheendra Hangal ">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="stylesheet" href="css/cs2422.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+        <section>
+            <h2>CS 2422: Software Debugging</h2>
+            <br/>
+            <h4>Class 4</h4>
+        </section>
+
+        <section>
+            <h2>Course matters</h2>
+            <p>Groups for Assignment 3?
+            <p>Bug log: it's ok to discover bugs (your own or others') by inspection
+            <p>Office hours: 6-7pm, Zoom room 225-625-1225
+        </section>
+
+        <section>
+            <h2>ACM Risks Forum</h2>
+            <p>Keenly tracks bugs (and risks of technology, computing, etc.) Sign up <a
+                    href="http://catless.ncl.ac.uk/Risks/">here</a>
+            <p>Wonderful historical and ongoing record of discussion about bugs (since 1985)
+            <p>Also discusses civil liberties and privacy issues
+                <img style="height:150px;margin-left: 200px" src="images/pgn-sri.jpg"><br/>
+                Moderated by Peter G. Neumann
+        </section>
+
+        <section>
+            <h2>Binary search to track regressions</h2>
+            <p>Use git bisect</p>
+            <pre><code>
+% git bisect start
+% git bisect good v1.0
+% git bisect bad # current version
+Bisecting: 6 revisions left to test after this
+[ecb6e1bc347ccecc5f9350d878ce677feb13d3b2] error handling on repo
+        </code></pre>
+            <div class="fragment">
+                <p>Also see git blame</p>
+                <hr/>
+                <div class="footer">
+                    <a href="https://git-scm.com/book/en/v2/Git-Tools-Debugging-with-Git">Debugging with git</a>.
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Homework (informal)</h2>
+            <p>Try git bisect on your own project</p>
+            <p>Use real or dummy criteria for judging good vs. bad commit</p>
+        </section>
+
+        <section>
+            <img src="images/blind-spots.png" style="height:400px"/>
+            <div class="fragment">
+                <p>Be aware of your blind spots</p>
+                <p>Difficult errors likely to be in the place you don't expect</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Bug Patterns</h2>
+            <aside class="notes">What bug patterns have you seen?</aside>
+        </section>
+
+        <section>
+            <h2>Uses of bug patterns</h2>
+            <p class="fragment">Avoid errors when programming
+            <p class="fragment">Look for errors during debugging
+            <p class="fragment">Look for errors during code review
+            <p class="fragment">Think up good test cases
+            <p class="fragment">Develop a sixth sense
+            <p class="fragment">Disclaimer: no set of patterns will be complete
+            <aside class="notes">Representation, syntax, security, concurrency, UI, ...</aside>
+
+        </section>
+
+
+        <section>
+            <h2>Arithmetic and representation errors</h2>
+        </section>
+
+        <section>
+            <h2>Is there a bug?</h2>
+            <pre><code class="java" style="max-height:500px">
+// a is a sorted array. 
+// returns position of key if present in a, -1 otherwise
+1: public static int binarySearch(int[] a, int key) {
+2:     int low = 0;
+3:     int high = a.length - 1;
+4:
+5:     while (low <= high) {
+6:         int mid = (low + high) / 2;
+7:         int midVal = a[mid];
+8:
+9:         if (midVal < key)
+10:             low = mid + 1;
+11:         else if (midVal > key)
+12:             high = mid - 1;
+13:         else
+14:             return mid; // key found
+15:    }
+16:    return -1;  // key not found.
+17: }
+</code></pre>
+
+        </section>
+
+        <section>
+            <h2>Bug example</h2>
+            <a href="https://research.googleblog.com/2006/06/extra-extra-read-all-about-it-nearly.html">Extra, Extra -
+                Read All About It: Nearly All Binary Searches and Mergesorts are Broken</a>
+
+            <br/>
+            <br/>
+
+            <p><i> “The general lesson that I take away from this bug is humility: It is hard to write even the smallest
+                piece of code correctly, and our whole world runs on big, complex pieces of code.”</i> <br/>
+                - Josh Bloch
+        </section>
+
+        <section>
+            <h2>Is there a bug?</h2>
+            <pre><code class="java" style="max-height:450px">
+
+    public static boolean isOdd (int x) {
+       return x % 2 == 1;
+    }
+
+</code></pre>
+
+            <p class="fragment">
+                The result of a remainder operation has the same sign as its left operand.
+            </p>
+            <br/>
+            <br/>
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+        <section>
+            <h2>Another example</h2>
+            <pre><code class="java" style="max-height:450px">
+
+    long MICROS_PER_DAY = 24 * 60 * 60 * 1000 * 1000;
+    long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
+    System.out.println (MICROS_PER_DAY/MILLIS_PER_DAY);
+
+</code></pre>
+
+            <br/>
+            <br/>
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+        <section>
+            <h2>Changes in type</h2>
+            <pre><code class="java" style="max-height:450px">
+
+    long MICROS_PER_DAY = (long) ((int) 24 * 60 * 60 * 1000 * 1000);
+    long MILLIS_PER_DAY = (long) ((int) 24 * 60 * 60 * 1000);
+    System.out.println (MICROS_PER_DAY/MILLIS_PER_DAY);
+
+</code></pre>
+            <p>
+                Beware of type coercion/conversion, esp. implicit
+                <br/>
+                <br/>
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+        <section>
+            <h2>The Fix</h2>
+            <pre><code class="java" style="max-height:450px">
+
+    long MICROS_PER_DAY = 24L * 60 * 60 * 1000 * 1000;
+    long MILLIS_PER_DAY = 24L * 60 * 60 * 1000;
+    System.out.println (MICROS_PER_DAY/MILLIS_PER_DAY);
+
+</code></pre>
+
+            <br/>
+            <br/>
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+
+
+    </div>
+
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+        // Full list of configuration options available at:
+        // https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize({
+            controls: true,
+            progress: false,
+            history: true,
+            center: true,
+            slideNumber: true,
+
+            transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+            // Optional reveal.js plugins
+            dependencies: [
+                {
+                    src: 'lib/js/classList.js', condition: function () {
+                        return !document.body.classList;
+                    }
+                },
+                {
+                    src: 'plugin/markdown/marked.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/markdown/markdown.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+                        hljs.initHighlightingOnLoad();
+                    }
+                },
+                {src: 'plugin/zoom-js/zoom.js', async: true},
+                {src: 'plugin/notes/notes.js', async: true}
+            ]
+        });
+
+    </script>
+
+</body>
+</html>
