@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>CS2422</title>
+
+    <meta name="description" content="Software Debugging">
+    <meta name="author" content="Sudheendra Hangal ">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css" id="theme">
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <link rel="stylesheet" href="css/cs2422.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+        var link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+        document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">
+
+        <section>
+            <h2>CS 2422: Software Debugging</h2>
+            <br/>
+            <h4>Class 6</h4>
+        </section>
+
+        <section>
+            <h2>Course matters</h2>
+            <p>Working session tonight, 8.30pm onwards in AC-4, 006
+            <p>In-class presentations (demos) tomorrow
+            <p>8-12 page writeups due before class tomorrow </p>
+            <p>Refer to guidelines in Class 3</p>
+        </section>
+
+        <section>
+            <h2>Course work: Assignment 3</h2>
+            <p>Try out each feature you are covering yourself; use your own programs and screenshots as examples
+            <p>Make sure screenshots are readable
+            <p>Layout should be compact if possible
+            <p>Stick to Arial 10 pt for text and Arial 18 pt for headers
+            <p>Be sure about a feature you are covering (No "I think ...")
+            <p>Adopt tone of a chapter in a book (all students are co-authors)
+        </section>
+
+        <section>
+            <p>Recommended book for Java: <br/><a
+                    href="https://www.flipkart.com/java-puzzlers-traps-pitfalls-corner-cases-1st/p/itme9k5mztr4uvg9">Programming
+                Puzzlers</a> by Josh Bloch and Neil Gafter<br/>(Indian edition available)
+        </section>
+
+        <section>
+            <h2>Strings</h2>
+        </section>
+
+        <section>
+            <h2>Is there a bug?</h2>
+
+            <pre><code class="java">
+    // city name is passed in by the user...
+    // and is currently set to "Delhi"
+    String s1 = "New " + "Delhi";
+    String s2 = "New " + city;
+    if (s1 == s2)
+        System.out.println ("A-ha, the old city is Delhi");
+
+</code></pre>
+
+        </section>
+
+        <section>
+            <h2>String equality</h2>
+            <p><code class="bordered">s1 == s2 </code>
+            <p>Could mean:
+            <p>Are s1 and s2 the same objects?
+            <p>Are their contents equal?
+        </section>
+
+        <section>
+            <h2>String equality: C and C++</h2>
+            <p><code class="bordered">s1 == s2</code> checks if same object (pointer)<br/>
+            <p><code class="bordered">strcmp (s1, s2) == 0</code> checks if contents equal<br/>
+            <p>strings implicitly terminated by 0 (null character)
+        </section>
+
+        <section>
+            <h2>String equality: Java</h2>
+            <p>Java: <code class="bordered">s1 == s2</code> checks if same object (reference)
+            <p>Java: <code class="bordered">s1.equals (s2)</code> checks if contents equal
+        </section>
+
+        <section>
+            <div style="font-size:90%">
+                <h2>String equality: Javascript</h2>
+                <p>JS has 2 types of strings
+                <p><code class="bordered">typeof 'abc'</code> string (primitive)
+                <p><code class="bordered">typeof new String('abc')</code> object (wrapping the string)
+                <p class="fragment"><code class="bordered">'abc' == 'abc'</code> <img class="ok" src="images/ok.svg"/>
+                <p class="fragment"><code class="bordered">new String('abc') == new String('abc') </code> <img
+                        class="not-ok" src="images/not-ok.svg"/>
+                <p class="fragment"><code class="bordered">typeof new String('abc').valueOf() </code> &nbsp;&nbsp;string<br/>
+                <aside class="notes">new String('abc').valueOf() == new String('abc').valueOf() <img class="ok"
+                                                                                                     src="images/ok.svg"/>
+                </aside>
+            </div>
+        </section>
+
+        <section>
+            <h2>String equality: Python</h2>
+            <p><code class="bordered">s1 == s2</code> checks if contents equal
+            <p><code class="bordered">s1 is s2</code> checks for identity comparison
+                <br/>
+                <br/>
+            <p>In all cases: <br/>
+                - identity comparison is O(1)<br/>
+                - content comparison is O(n) worst case
+            <aside class="notes">String internment allows content comparison in O(1)</aside>
+        </section>
+
+        <section>
+            <h2>Copying strings</h2>
+
+            <p>In C:
+            <p><code class="bordered">strcpy (s1, s2);</code>
+
+            <p>Ensure s2 properly null-terminated
+            <p>Ensure enough space in s1 (can use strncpy)
+            <p>Watch out for order of arguments
+
+        </section>
+
+        <section>
+            <h2>Some puzzles</h2>
+        </section>
+
+        <section>
+            <h2>What makes this an infinite loop?</h2>
+
+            <pre><code class="java">
+
+     start = ...;
+     for (int i = start; i <= start+1; i++) {
+         // empty
+     }
+
+</code></pre>
+
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+        <section>
+            <h2>What makes this an infinite loop?</h2>
+
+            <pre><code class="java">
+
+     while (i == i+1) {
+         // empty
+     }
+
+</code></pre>
+
+            <br/>
+
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+        <section>
+            <h2>What makes this an infinite loop?</h2>
+
+            <pre><code class="java">
+
+     while (i != i) {
+         // empty
+     }
+
+</code></pre>
+
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+        <section>
+            <h2>What makes this an infinite loop?</h2>
+
+            <pre><code class="java">
+
+     while (i != i+0) {
+         // empty
+     }
+
+</code></pre>
+
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+
+            <hr/>
+            <div class="footer">Programming Puzzlers</div>
+        </section>
+
+        <section>
+            <h2>I18N issues</h2>
+            <p>Strings, characters (Unicode code points), glyphs, bytes, encodings
+            <p class="fragment">A character may be longer than 8 bits
+            <p class="fragment">A character (a code point) may be longer than 16 bits
+            <p class="fragment">Java chars are simply 16-bit values, not code points
+            <aside class="notes">Externalize strings into language and locale-specific resource bundles</aside>
+            <aside class="notes">Multiple locales for the same language</aside>
+            <p class="fragment">Must read: <a href="https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/
+">The absolute minimum every software developer must absolutely, positively know about Unicode and character sets, no
+                excuses</a>
+                (Java-specific issues: <a href="https://www.javaspecialists.eu/archive/Issue209.html">1</a>, <a
+                        href="https://www.javaspecialists.eu/archive/Issue211.html">2</a>)
+        </section>
+
+        <section>
+            <h2>I18N: mental model</h2>
+            <p>A string is a series of Unicode code points
+            <p>A code point is 1 or 2 16-bit chars in Java
+            <p>Code points are defined in Unicode blocks
+            <p>e.g. &#x0915; (0x915 in Devanagari block) not the same as &#x0995; (0x885 in Bengali block)
+            <p>A series of code points is encoded into a series of bytes using an encoding like UTF-8 or ISO-8859
+            <p>One or more code points are rendered as a glyph using a font and its decorations (bold/italic, etc.)
+        </section>
+
+        <section>
+            <h2>Experiment with I18N</h2>
+            <p>Download <a href="I18N.java">this code</a> and play around with it.
+        </section>
+
+        <section>
+            <h2>I18N issues</h2>
+            <p>What does this Java program print?
+
+            <pre><code class="java">
+    public static void main (String args[]) {
+      String s = "title";
+      System.out.println (s.toUpperCase()); 
+    }
+</code></pre>
+            <p class="fragment">What does this Java program print in Turkey?
+        </section>
+
+        <section>
+            <h2>I18N issues</h2>
+            <p>What does this Java program print?
+
+            <pre><code class="java">
+    public static void main (String args[]) {
+      String s = "title";
+      System.out.println (s.toUpperCase(new Locale("tr", "TR"))); 
+    }
+</code></pre>
+            <p class="fragment">Turkish-i problem: i &rarr; &#x0130;, &#x0131; &rarr; I
+        </section>
+
+        <section>
+            <h2>I18N issues</h2>
+            <p>What does this Java program print?
+            <pre><code class="java">
+      String s = "ki&#x00df";
+      System.out.println (s.length());
+      System.out.println (s.toUpperCase().length());
+</code></pre>
+            <p class="fragment">Basic message: many pitfalls with international character sets
+        </section>
+
+        <section>
+            <h2>Immutability of strings </h2>
+            <p>Strings are immutable in modern languages (not in C)
+            <p> Common pitfall:
+            <pre><code class="java">
+      String s = "title";
+      s.toUpperCase();
+      s.trim();
+      System.out.println (s);
+</code></pre>
+            <p class="fragment"> Ignoring return value of operations on strings is often a bug
+        </section>
+
+        <section>
+            <h2>Regular expressions</h2>
+            <p> Exercise: convert all periods to commas in a string with a regex
+            <p> a.b &rarr; a/b
+                <br/>
+            <p> Exercise: convert all backslashes to forward slashes
+            <p> a\b &rarr; a/b
+        </section>
+
+        <section>
+            <h2>Unpacking layers of escapes</h2>
+            <pre><code class="java">
+  String s = s.replaceAll ("\\\\", "/"); // replace \ with /
+  String s = s.replaceAll ("\\.", "/"); // replace . with /
+</code></pre>
+
+            <p>JVM bytecode (with javap -c)
+            <pre><code class="java">
+  Code:
+       0: aload_1
+       1: ldc           #2 // String \\
+       3: ldc           #3 // String /
+       5: invokevirtual #4 // Method java/lang/String.replaceAll...
+       8: astore_1
+       9: aload_1
+      10: ldc           #5 // String \.
+      12: ldc           #3 // String /
+      14: invokevirtual #4 // Method java/lang/String.replaceAll...
+      17: astore_1
+      18: return
+</code></pre>
+
+        </section>
+
+        <section>
+            <h2>Unpacking layers of escapes</h2>
+            <p>Suppose you want to match foo.txt (but not foo_txt) </p>
+            <p>What is typed into the shell:
+            <pre><code class="bash">
+  grep foo\\.txt file
+  grep foo'\.'txt file
+</code></pre>
+
+            <p>What the program sees (after shell processing):
+            <pre><code class="bash">
+  % echo foo\\.txt
+  foo\.txt
+  % echo foo'\.'txt
+  foo\.txt
+  % echo 'foo\.txt'
+  foo\.txt
+</code></pre>
+
+        </section>
+
+        <section>
+            <h2>Understanding escaping</h2>
+            <p> Know all the layers: compiler, regex library, shell, etc.
+            <p> Unpack the exact string seen by each layer
+            <p>Match string doesn't need escape for a "/"
+            <p>Replacement string doesn't need escapes for . wildcards
+            <pre><code class="java">
+   s = s.replaceAll ("\\.", "/"); // replace periods with slashes
+   s = s.replaceAll ("/", "."); // replace slashes with periods
+</code></pre>
+
+        </section>
+
+        <section>
+            <h2>Regular expressions</h2>
+            <p> General rules:
+            <p> Prefer to avoid complex expressions (or at least document them extensively and well)
+            <p> Need to prove in a simple way that the regex is correct
+            <p> Break up complex regular expressions into simple ones
+        </section>
+
+
+        <section>
+            <h2>String manipulation</h2>
+            <p>Document example values at each step
+            <p>Make best effort to illustrate tricky situations
+
+            <pre><code class="java">
+  // converts a file path like a/b/c.class or a\b\c.class into a.b.c
+  String manipulate (String path) {
+    // ex: path = a\b\c.class
+    path = path.replaceAll ("\\\\", "/"); // a/b/c.class
+    String dir = getDir(path); // a/b
+    String file = getFile(path); // c.class
+    String ext = getExt(file); // .class
+    String prefix = getPrefix(file); // c
+    String pkg = path.replaceAll ("/", "."); // a.b
+    return pkg + "." + prefix; // a.b.c
+  }
+   </code></pre>
+            <aside class="notes">If you're writing a compiler or some program analysis tool, this is a common operation</aside>
+        </section>
+
+        <section>
+            <h2>Exercise: finding substrings</h2>
+
+            <p>Write methods to find the file prefix and extension, given a filename (e.g. "file.txt" -> "file" and
+                "txt")
+            <p>Use C, Java, Python, or JS
+
+        </section>
+
+        <section>
+            <h2>Exercise: String canonicalization </h2>
+            <p>e.g. reading a list of names, we want to know (robustly) if we've seen a name before
+            <p>First Last
+            <p>Last, First
+            <p> First&nbsp;&nbsp; Last</p>
+            <p>first last</p>
+            <p>First last</p>
+            <p>Dr. First Last</p>
+        </section>
+
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+
+        // Full list of configuration options available at:
+        // https://github.com/hakimel/reveal.js#configuration
+        Reveal.initialize({
+            controls: true,
+            progress: false,
+            history: true,
+            center: true,
+            slideNumber: true,
+
+            transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+            // Optional reveal.js plugins
+            dependencies: [
+                {
+                    src: 'lib/js/classList.js', condition: function () {
+                        return !document.body.classList;
+                    }
+                },
+                {
+                    src: 'plugin/markdown/marked.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/markdown/markdown.js', condition: function () {
+                        return !!document.querySelector('[data-markdown]');
+                    }
+                },
+                {
+                    src: 'plugin/highlight/highlight.js', async: true, callback: function () {
+                        hljs.initHighlightingOnLoad();
+                    }
+                },
+                {src: 'plugin/zoom-js/zoom.js', async: true},
+                {src: 'plugin/notes/notes.js', async: true}
+            ]
+        });
+
+    </script>
+
+</body>
+</html>
