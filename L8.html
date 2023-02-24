@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>CS2422</title>
+
+		<meta name="description" content="Software Debugging">
+		<meta name="author" content="Sudheendra Hangal ">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+        <link rel="stylesheet" href="css/cs2422.css">
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+	<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+<section>
+	<h2>CS 2422: Software Debugging</h2>
+    <br/>
+    <h4>Class 8</h4>
+</section>
+
+    <section>
+        <h2>Course matters</h2>
+        <p>DIDUCE review due tomorrow
+        <p>How are the bug logs going?
+        <p>Anyone tried the string processing programs (file extension, canonical names)?
+    </section>
+
+    <section>
+        <h2>String manipulation</h2>
+        <p>Document example values at each step
+        <p>Make best effort to illustrate tricky situations
+
+        <pre><code class="java">
+  // converts a file path like a/b/c.class or a\b\c.class into a.b.c
+  String manipulate (String path) {
+    // ex: path = a\b\c.class
+    path = path.replaceAll ("\\\\", "/"); // a/b/c.class
+    String dir = getDir(path); // a/b
+    String file = getFile(path); // c.class
+    String ext = getExt(file); // .class
+    String prefix = getPrefix(file); // c
+    String pkg = path.replaceAll ("/", "."); // a.b
+    return pkg + "." + prefix; // a.b.c
+  }
+   </code></pre>
+        <aside class="notes">If you're writing a compiler or some program analysis tool, this is a common operation</aside>
+    </section>
+
+    <section>
+        <h2>Research idea</h2>
+        <p>It is painful and difficult to understand a large program
+        <p>Run an instrumented program to generate concrete values per line (assume it runs correctly)
+        <p>Insert an example value back into source code to help program understanding
+        <p>Or even insert a <i>synthesis</i> of values
+        <p>Focus on presence of interesting values (not absence)
+    </section>
+
+    <section>
+        <h2>Automatic code annotation</h2>
+        <p>Synthesis of example values (multiple possible ways)
+        <p>
+        <pre><code class="java">
+ // comments below would be automatically generated from a successful run
+ // of the program and inserted into a special version of the source code
+
+ Object p = ...; // p may be null
+ String x = ...; // x's length is from 5 to 45 and always ends with /
+ int k = ...; // k ranges from 3 to 20
+ int m = ...; // m is not negative
+   </code></pre>
+        <p>Open question: how else can an IDE support program understanding?
+    </section>
+
+    <section>
+        <h2>String canonicalization</h2>
+        <p>Say names of users are stored in a map as they are read
+        <p>Both put and get on the map must use the exact same key
+        <p>Can be done by canonicalizing string, e.g. always convert to first last
+        <p>But must be done consistently along <i>all</i> code paths
+    </section>
+
+    <section>
+        <h2>Strings on a web page </h2>
+        <p>Strings with HTML special chars must be HTML escaped
+        <p> e.g. & &rarr; &amp;amp;, &lt; &rarr; &amp;lt;, etc.
+        <p>For every string being emit on a page, be aware of where it is coming from
+        <p>Ok if within the program and can be reasoned about
+        <p>Must escape if coming from unconstrained user input
+        <p>Must avoid escaping multiple times (unlike canon.)
+    </section>
+
+    <section>
+        <h2>Real world example</h2>
+        <p>Web app was printing name of a person
+        <p>Along came input: Helen &amp; Newton (a couple) for a "person" name
+        <p>Result: broke the HTML page
+        <p>Lesson: Always escape unknown strings (even if expected to be "ordinary")
+        <p>Reflection of untrusted input into HTML is an important vector for cross-site scripting (XSS) attacks
+    </section>
+
+    <section>
+        <h2>Trust in strings</h2>
+        <p>Where does a string get its value from?
+        <p>- From within the program
+        <p>- From outside the program, but from a trusted source
+        <p>- From outside the program, but from a maybe untrusted source
+    </section>
+
+    <section>
+        <h2>Taint analysis</h2>
+        <p>Any operation involving 2 strings results in a string with the lower trust level</p>
+        <p>A tainted string immediately taints everything that it feeds</p>
+        <p>Common technique for security analysis</p>
+    </section>
+
+    <section>
+        <h2>Injection attacks</h2>
+        <img src="images/dilbert.jpg">
+    </section>
+
+    <section>
+        <h2>Injection attacks</h2>
+        <p> Many types: SQL injection, Command injection, Code injection, CRLF injection, ...</p>
+        <p> General principle: an untrusted string makes its way into a place that is thought to be trusted</p>
+        <p> Conceptual flaw: treating data as a program</p>
+        <br/>
+        <br/>
+        <hr/>
+        <div class="footer"> <a href="https://www.acunetix.com/blog/articles/injection-attacks/">Overview</a></div>
+    </section>
+
+    <section>
+        <h2>Shellshock (2014)</h2>
+        <p>Serious vulnerability discovered in the bash shell (undetected since ~1989)
+        <p>Attacker can execute arbitrary code on a server
+        <p>Caused immediate patches and upgrades
+        <p>Initial fix was not complete
+    </section>
+
+    <section>
+        <h2>Shellshock bug</h2>
+        <pre><code class="bash">
+  p=FOO echo $p
+  # prints FOO in env. var p
+
+  x='() { :;}; do_bad_stuff' bash -c "do_good_stuff"
+  # Only intends to define x as a function
+  # but also executes do_bad_stuff
+</code></pre>
+
+    </section>
+
+    <section>
+        <h2>Shellshock exploit</h2>
+
+        <p>Possible exploit: send HTTP header to /.../abc.cgi
+        <pre><code class="bash">
+  Cookie: () { :;}; do_bad_stuff
+</code></pre>
+
+        <br/>
+        <p>
+            Website may execute:
+        <p>
+        <pre><code class="bash">
+  # header is set as an env var
+  Cookie='() { :;}; do_bad_stuff' bash /.../abc.cgi
+</code></pre>
+
+    </section>
+
+    <section>
+        <h2>Log4Shell exploit (2021)</h2>
+
+        <p>Major vulnerability affecting a huge number of servers
+        <p>Log4j while logging a string interprets it for directory server references</p>
+        <p>Attacker can format logged string to point to a malicious directory server</p>
+        <p>Directory sends malicious class that is executed on the server</p>
+    </section>
+
+    <section>
+        <h2>Log4Shell exploit (2021)</h2>
+
+        <img src="https://assets-global.website-files.com/5efc3ccdb72aaa7480ec8179/61c2ce53851f7ca1863324aa_Log4J%204.png"/>
+
+    </section>
+
+</div>
+
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: false,
+				history: true,
+				center: true,
+slideNumber: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
