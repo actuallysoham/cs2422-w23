@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>CS2422</title>
+
+		<meta name="description" content="Software Debugging">
+		<meta name="author" content="Sudheendra Hangal ">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+        <link rel="stylesheet" href="css/cs2422.css">
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+	<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+	<section>
+		<h2>CS 2422: Software Debugging</h2>
+		<br/>
+		<h4>Class 9</h4>
+	</section>
+
+    <section>
+        <h2>What is wrong?</h2>
+
+        <pre><code class="js">
+
+<script>
+    buttons = document.getElementsByTagName('button');
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].addEventListener('click', function() {
+            alert ('clicked button ' + i);
+        });
+    }
+</script>
+    </code>
+    </pre>
+        <p><a href="programs/closures.html">Try it</a>
+    </section>
+
+    <section>
+        <h2>A fix</h2>
+
+        <pre><code class="js">
+
+<script>
+  function get_handler(i) { return function() { alert (i); }; }
+
+  buttons = document.getElementsByTagName('button');
+  for (var i = 0; i < buttons.length; i++) {
+      buttons[i].addEventListener('click', get_handler(i));
+  }
+</script>
+
+    </code></pre>
+        <p><a href="programs/closures-fixed.html">Try it</a>
+
+    </section>
+
+    <section>
+        <h2>General lessons</h2>
+        <p>Be very aware of when objects are shared vs. copied</p>
+        <p>Draw a pointer diagram</p>
+        <p>Closures sometimes used in place of small classes</p>
+        <p>... can be tricky</p>
+        <p>... also used in Java/Python</p>
+        <aside class="notes">Used for Java UX classes</aside>
+        <aside class="notes">Python has nonlocal keyword</aside>
+    </section>
+
+    <section>
+        <h2>Invariants</h2>
+    </section>
+
+    <section>
+        <h2>Invariants</h2>
+        <p>Some property of the program that is true</p>
+        <p>Could be associated with a program point or global
+        <p>Could be of many types</p>
+        <p>Infinitely many (redundant) ones</p>
+        <p class="fragment">Ideally, you'd like a <em>proof</em> that it is correct</p>
+    </section>
+
+    <section>
+        <h2>Invariant types</h2>
+        <p>"This code is never executed" (Should not reach here)</p>
+        <p>"x at this point should be ... " (Value at a point)
+        <p>"Akshat.balance should be > 0" (Value of a variable)</p>
+        <p>"Akshat.balance should only increase" (Changes in a variable)</p>
+        <p>"Soham.balance + Akshat.balance should be > 0" (relation between multiple vars)</p>
+        <p>"Passengers in a bus must be < its capacity" (relation between fields of an object)</p>
+    </section>
+
+    <section>
+        <h2>Invariant types</h2>
+        <p>"Heap property must be followed" (Data structure consistency)</p>
+        <p>"for all courses a student is enrolled in, course roster must include student" (Referential integrity)
+        <p>"If radiation machine is in state X, voltage must be < Y" (State properties)</p>
+        <p>etc....</p>
+    </section>
+
+    <section>
+        <div style="font-size: 90%">
+            <h2>Pre and post conditions</h2>
+            <p>Property of parameter when method called (e.g. i > 0, p &ne; null)</p>
+            <p>State of the program when method is called (connection is open)</p>
+            <p>Return value when method returns (never returns null)</p>
+            <p>State of the program when method returns (array is sorted)</p>
+            <p>Important part of a method's interface documentation</p>
+            <p>Languages like <a href="https://www.eiffel.org/">Eiffel</a>/<a href="http://www.openjml.org/examples/binary-search.html">JML</a> allow precise capture of pre/post conditions</p>
+            <p>Can try to verify statically or dynamically</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Managing invariants</h2>
+
+        <p>Consider an object's invariants and capture them in a verify() method
+        <p>As important and convenient as toString()
+        <p>Executable invariants are better as documentation than comments</p>
+        <p>verify() should be idempotent and can be called from a debugger</p>
+        <p>Invariants ease reasoning (like lemmas): invariants at a point become constraints for downstream analysis</p>
+    </section>
+
+    <section>
+        <h2>Assertions</h2>
+        <p>Invariants are often written as assertions in the code
+        <p>Simple assertions can be proven and optimized away
+        <p>But for most, runtime overhead if enabled (&rarr; assertions should be simple or high-value)
+        <p>Compiler or runtime has a way to enable or disable en masse
+        <p>Enable in development mode or when suspecting a bug; disable in routine production mode
+    </section>
+
+    <section>
+        <h2>Assertions</h2>
+        <p>In C: a macro defined in assert.h
+        <p>In Java: disabled by default; enable with java -ea
+        <p>In Python: enabled by default; disable with python -O
+        <p>In both Java and Python: AssertionError is thrown if assert condition is false
+        <p>Open question: why no powerful configuration framework for assertions like logging? e.g. assertion severity, turn on/off per module</p>
+    </section>
+
+    <section>
+        <h2>DIDUCE vs. Daikon</h2>
+        <p>Daikon:<br/>
+            - more complex invariants (e.g. a < b)<br/>
+            - less scalable (100s of LoC)<br/>
+            - invariants consumed by human<br/>
+        <p>DIDUCE:<br/>
+            - simple invariants (e.g. x in [1..10], o &ne; null, y always increases)<br/>
+            - more scalable (10,000s of LoC)<br/>
+            - Most invariants consumed by itself<br/>
+        <aside class="notes">Some of the back story on DIDUCE</aside>
+    </section>
+
+</div>
+
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: false,
+				history: true,
+				center: true,
+slideNumber: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
