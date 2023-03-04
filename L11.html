@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+        <title>CS2422</title>
+
+		<meta name="description" content="Software Debugging">
+		<meta name="author" content="Sudheendra Hangal ">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+        <link rel="stylesheet" href="css/cs2422.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+	<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+	<section>
+		<h2>CS 2422: Software Debugging</h2>
+		<br/>
+		<h4>Class 11</h4>
+	</section>
+
+    <section>
+        <h2>Course updates</h2>
+        <p>Regular class on Thu, 16 March</p>
+        <p>Final exam: Friday, 17 March 3pm</p>
+        <p>Practice assignment later this week</p>
+    </section>
+
+    <section>
+        <h2>Debug agents</h2>
+        <p>Debug agents can compromise security!</p>
+        <p>And possibly lower performance (precise exceptions, etc.)</p>
+        <p>Need to carefully decide which tools to enable in production</p>
+    </section>
+
+    <section>
+        <h2>Hardware support for software debugging</h2>
+        <p>Watchpoint registers - trigger trap when read/write/access to address (or range)</p>
+        <p>Breakpoint registers - trigger trap when program counter matches an address (or range)</p>
+        <p>Other tricks like page-level protection </p>
+        <p>? (always looking for good use of transistors)</p>
+    </section>
+
+    <section>
+        <h2>Exercise</h2>
+        <p>See effect of setting breakpoints and conditional breakpoints in IntelliJ IDEA and gdb</p>
+        <p><a href="programs/MatMult.java">MatMult.java</a>
+        <p><a href="programs/matmult.c">matmult.c</a>
+    </section>
+
+    <section>
+        <h2>Other ways of invoking debugger</h2>
+        <p>Not using a debug agent</p>
+        <p>When you detect a problem:</p>
+        <p>Invoke gdb and attach to own process
+        <p>debugger in JS
+        <p>Can only be used in development environments</p>
+        <p>Especially useful when problem is hard to reproduce</p>
+        <p></p>
+    </section>
+
+    <section>
+        <h2>Other debugging techniques</h2>
+    </section>
+
+    <section>
+        <h2>Program-specific debug infrastructure</h2>
+        <div style="font-size:90%">
+            <p>Always think about debug infrastructure for your program. e.g.,:</p>
+            <p>Oriented towards application logic... but needs up-front investment</p>
+            <p>Diagnostic/instrumented/developer modes<br/>
+            <p>Error detection and consistency checking<br/>
+            <p>Logging infrastructure</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Static analysis tools</h2>
+        <p><a href="https://spotbugs.github.io/">Spotbugs/Findbugs</a>
+        <p>Linters: lint, <a href="https://www.jslint.com/">jslint</a>, <a href="https://www.pylint.org/">pylint</a>, gcc -Wall, IDE inspections, etc.</p>
+        <p>Based on simple dataflow analysis</p>
+        <p>Problem with false +ves (need configuration to suppress them)</p>
+        <p>Pointer analysis is a limitation for accuracy</p>
+    </section>
+
+    <section>
+        <h2>Higher level debugging</h2>
+        <p>Based on an abstract representation of the program</p>
+        <p>Often reduced to a state machine or some logical format</p>
+        <p>Question: can the state machine ever reach an undesirable state?</p>
+        <p>Can use tools like model checkers or theorem provers to check if this is possible</p>
+        <p>Trying to generate proof often points out the bug via counter-example</p>
+        <p>Needs invariants and assumptions about the system</p>
+    </section>
+
+    <section>
+        <img style="height:500px" src="images/fsm.png"/>
+        <aside class="notes">used in cache coherence, Needham-Schroder protocol bug undiscovered from 1978-1995. can say x happens-before y, y must follow x </aside>
+    </section>
+
+    <section>
+        <h2>Instrumentation</h2>
+    </section>
+
+    <section>
+        <h2>Instrumentation</h2>
+        <p>Powerful way to modify programs (without changing each line)</p>
+        <p>Modify programs at source/bytecode/binary level</p>
+        <p>Advantages: More directed, less overhead than a debugger</p>
+        <p>Instrumentation frameworks like <a href="http://asm.ow2.org/">ASM</a> for Java,
+            <a href="https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool">PIN</a> for x86 binary,
+            <a href="https://docs.python.org/2/library/sys.html">sys.settrace</a> in Python, Reflective frameworks like in JS
+    </section>
+
+    <section>
+        <h2>Instrumentation: AOP</h2>
+        <p>Aspect-oriented programming, e.g.
+        <p><a href="https://www.eclipse.org/aspectj/">AspectJ</a></p>
+        <p>Introduce strong "choke points" where instrumentation can be added manually<br/>
+        - e.g. accessor methods setBalance() can check that balance never goes below 0
+        <p>Good for <u>cross-cutting concerns</u> across modules like security, exception handling, etc.</p>
+    </section>
+
+    <section>
+        <h2>Instrumentation: AOP</h2>
+        <pre><code>
+  before(): move() {
+    System.out.println("about to move");
+  }
+
+  after() returning: move() {
+    System.out.println("just successfully moved");
+  }
+        </code>
+
+        </pre>
+    </section>
+
+    <section>
+        <h2>Logging</h2>
+    </section>
+
+    <section>
+        <h2>Thinking about logging</h2>
+        <p>Logs are the first line of information for debugging
+        <p>Like a plane's "black box"</p>
+        <p>Much easier to access than a debugger
+        <p>Think pro-actively... if an error happens, what information will you need?
+        <p>Once you fix a bug... ensure that a similar bug trace can be "read off" from the logs
+        <p>Log unexplainable inputs (may be security threats)
+    </section>
+
+    <section>
+        <h2>Logging</h2>
+        <div style="font-size:80%">
+            <p>Use logging frameworks like log4j (Java), console.log/warn (JS), logging.Logger (Python) etc.
+            <p>Logging level can be set per module
+            <p>Typical logging levels: Critical/Error, Warn, Info, Debug, Fine, etc.</p>
+            <p>Enabling lower levels automatically enables higher levels</p>
+            <p>Can be hierarchical, e.g. logger for module, module.submodule, etc.</p>
+            <p>Setting level on parent (module) also affects children's level (submodule)</p>
+            <p>Can be changed dynamically at run-time (so provide an advanced option to turn on)</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Logging</h2>
+        <div style="font-size:80%">
+
+        <p>Logging involves some performance overhead if enabled</p>
+        <p>Beware of eager parameter evaluation</p>
+        <p>Option: Trace buffer in memory to query or visualize structured buffer instead of text log<br/>
+        <p>Making sense of logs is a huge real-life problem (c.f. <a href="http://splunk.com">Splunk</a>)</p>
+        <p>Constantly keep improving the quality of logging in your program as you find bugs...
+        <p>The same type of bug is likely to re-appear... imagine you don't have a debugger
+        <p>Never log sensitive data like passwords!</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Log4j</h2>
+  <p>In Python:
+        <pre><code class="python">
+  log = Logger.getLogger("testLog")
+  # use the config data in the properties file
+  PropertyConfigurator.configure('log4j.properties')
+  log.info('test message')
+        </code></pre>
+        <p>Note: logger config. can be changed during program execution
+    </section>
+
+    <section>
+		<h2>log4j.properties</h2>
+        <pre><code class="none">
+
+  log4j.logger.testLog=debug, stdout, LOGFILE
+  # testlog's level will be debug
+  # stdout and LOGFILE are "appenders"
+
+  # this appender prints to stdout
+  log4j.appender.stdout=org.apache.log4j.ConsoleAppender
+  log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
+  log4j.appender.stdout.layout.ConversionPattern=%d{HH:mm} | %p | %m
+
+  # this appender prints to a "rolling" log file
+  log4j.appender.LOGFILE=org.apache.log4j.RollingFileAppender
+  log4j.appender.LOGFILE.File=output.log
+  log4j.appender.LOGFILE.MaxFileSize=10MB
+  log4j.appender.LOGFILE.MaxBackups=2
+
+</code></pre>
+	</section>
+
+    <section>
+        <h2>Log4j: advanced features</h2>
+        <p>Problem: hard to make out which messages belong to which thread in a highly multi-threaded environment</p>
+        <p>Solution: Contextual information on a per-thread basis</p>
+        <p>Using <a href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/MDC.html">Mapped Diagnostic Context</a> (MDC)</p>
+        <p>e.g. put logged in user name in MDC so log messages reflect the user</p>
+	</section>
+
+</div>
+    
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: false,
+				history: true,
+				center: true,
+slideNumber: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
