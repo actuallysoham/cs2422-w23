@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>CS2422</title>
+
+		<meta name="description" content="Software Debugging">
+		<meta name="author" content="Sudheendra Hangal ">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="css/cs2422.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+<div id="myLogo" style="background: url('http://www.ashoka.edu.in/wp-content/themes/Ashoka-Edu/images/logo.png');
+                        position: absolute;
+                        bottom: 10px;
+                        left: 10px;
+                        width: 75px;
+                        height: 75px;"></div>
+
+
+<div class="reveal">
+
+	<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+	<section>
+		<h2>CS 2422: Software Debugging</h2>
+		<br/>
+		<h4>Class 12</h4>
+	</section>
+
+    <section>
+        <h2>Course updates</h2>
+        <p>Office hours today 6-7pm</p>
+        <p>Final exam tomorrow at 3pm in 2 parts </p>
+        <p>- 30 minute written exam (closed book)
+        <p>- 2 hour online exam 
+        <p>Material: everything we've covered in the course
+    </section>
+
+    <section>
+        <h2>Memory errors</h2>
+    </section>
+
+    <section>
+        <h2>Types of memory errors</h2>
+        <p>Uninitialized memory read</p>
+        <pre><code class="c">
+    int x;
+    printf ("%d", x);
+        </code></pre>
+        <p>Using freed memory</p>
+        <pre><code class="c">
+    int *x = malloc (...);
+    free (x);
+    printf ("%d", *x);
+        </code></pre>
+    </section>
+    <section>
+        <h2>Types of memory errors</h2>
+        <p>Array bounds overruns</p>
+        <pre><code class="c">
+    int x[10];
+    printf ("%d", x[10]);
+        </code></pre>
+
+        <div class="fragment">
+            <p>....</p>
+            <p>Responsible for a <u>large</u> number of security exploits</p>
+            <p>Can be caught in C with tools like
+                <a href="http://www-leland.stanford.edu/class/cs343/resources/purify-ug.pdf">Purify</a> and
+                <a href="http://valgrind.org/docs/manual/mc-manual.html">Valgrind memcheck</a></p>
+            <p>May also apply to safer languages e.g. when manipulating buffers</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>Detecting memory errors</h2>
+        <p>Introduce additional state per memory location</p>
+        <p>Introduces performance overhead, but very effective at catching errors</p>
+        <p>Instrument reads/writes to memory to check + maintain this state</p>
+        <p>e.g. error if:
+        <p>- memory location is being read and is in uninitialized state</p>
+        <p>- memory location is being read/written/freed and is in unallocated state</p>
+    </section>
+
+    <section>
+        <h2>Memory states</h2>
+        <img style="height:400px" src="images/purify-states.png"/>
+        <hr/>
+        <div class="footer"><a href="http://www-leland.stanford.edu/class/cs343/resources/purify-ug.pdf">Purify user guide</a></div>
+    </section>
+
+    <section>
+        <h2>Detecting array bounds violations</h2>
+        <p>Introduce fences around arrays</p>
+        <p>Check if the fence area is being read/written</p>
+    </section>
+
+    <section>
+        <h2>Heartbleed bug</h2>
+        <p>Major bug discovered in OpenSSL in 2014</p>
+        <p>Servers could leak data in response to Heartbeat section of protocol</p>
+        <p>Missing input check</p>
+        <p><a href="https://xkcd.com/1354/">XKCD</a>
+            (See <a href="https://www.theregister.co.uk/2014/04/09/heartbleed_explained/">more</a>, <a href="https://jhalderm.com/pub/papers/heartbleed-imc14.pdf
+">Impact</a>)
+        </p>
+        <p>Caused immediate upgrade with fix</p>
+        <p>Unknown what was leaked: needed immediate changes to passwords, keys, etc.</p>
+    </section>
+
+    <section>
+        <h2>Possible research area</h2>
+        <p>The need to handle exceptions is ubiquitous
+        <p>Exception syntax (try-catch) is cumbersome...</p>
+        <p>...and discourages precise expression of desired semantics</p>
+        <p>Can we invent better syntax?</p>
+    </section>
+
+    <section>
+        <h2>Examples</h2>
+        <pre><code class="java">
+  List&lt;String&gt; tabContents; [ignore-exceptions self, elements]
+  ...
+  for (String t: tabContents) // ex. ignored if tabContents is null
+    if (t.contains (searchString)) // ex. ignored if t is null
+       ...
+
+        </code></pre>
+        <p>Could be resolved statically if possible
+        <p>...or perhaps dynamically, by associating an "error-tolerant" bit with objects</p>
+        <p>Or could use aspects</p>
+    </section>
+
+    <section>
+        <h2>Possible improvement</h2>
+        <p>Exception handlers could be associated with objects like methods</p>
+        <p>If an exception happens on this object, the desired behaviour is { ... } </p>
+        <p>Object could also carry state saying "Exception occurred on my method, so my state is unreliable"</p>
+        <p>This unreliable state could propagate whenever the object is used (decision taken at final user-visible point)</p>
+        <p>Analogous to floating point NaNs</p>
+        <aside class="notes"></aside>
+    </section>
+
+    <section>
+        <h2>Prioritization of code/variables</h2>
+
+        <pre><code class="java">
+  priority low: {
+    // code for stats, logging etc. which is not that important
+  }
+  Logger log; [low priority]
+        </code></pre>
+        <p>Only best-effort to run low priority code</p>
+        <p>Runtime may ignore exceptions in this block</p>
+        <p>Or simply skip it if running low on battery, system overloaded, etc.</p>
+    </section>
+
+    <section>
+        <h2>Threading and errors</h2>
+        <p>A "crash" in a thread only kills that thread</p>
+        <p>Never stop the entire system (System.exit()) in a multi-user environment!</p>
+        <p>Micro-threads (like event handlers) can contain crashes</p>
+        <p>Large blocks of code could be written as functions executed in micro-threads
+    </section>
+
+    <section>
+        <h2>Aside: designing new languages</h2>
+        <p>Keep gathering patterns of examples that cannot be expressed in a language</p>
+        <p>Often implemented imprecisely or with clumsy hacks (or things like Aspects)</p>
+        <p>Those patterns can make it into syntax or a new PL</p>
+        <p>You know a language well when you realize its limitations</p>
+    </section>
+
+    <section>
+        <h2>Detecting errors</h2>
+        <p>Often no easy way to tell if the system is correct</p>
+        <p>But have a reference that serves as a "golden model", e.g.</p>
+        <p>- an executable specification</p>
+        <p>- a simpler version less likely to have errors</p>
+        <p>- a previous release</p>
+        <p>- implementation in a different language</p>
+        <p>Run both systems in parallel and compare results</p>
+    </section>
+
+
+    <section>
+        <h2>Debugging hardware</h2>
+    </section>
+
+    <section>
+        <h2>Hardware debugging</h2>
+        <p>Multiple types of test / debug</p>
+        <p>Pre-silicon (in simulation)</p>
+        <p>Post-silicon (on tester)
+        <p>Post-silicon (in system)</p>
+        <p>Looking for design or manufacturing defects</p>
+    </section>
+
+    <section>
+        <h2>Finding hardware (design) bugs</h2>
+        <p>High-stakes environment: Single bug can cost $10-$20M and a lot of time</p>
+        <p>Hardware design in HDL (e.g. Verilog), run on a simulator</p>
+        <p>Large testing teams, writing directed test cases</p>
+        <p>Large tools teams, writing custom tools and automatically generated tests</p>
+        <p>"Tape out" to fabrication when team satisfied design is correct</p>
+    </section>
+
+    <section>
+        <h2>Hardware debugging techniques</h2>
+        <p>Similar to software:
+        <p> - assertions in the code
+        <p> - stepping, breakpoints, etc.</p>
+        <p> - waveform viewers for detailed trace</p>
+        <p> - debug real hardware with logic analyzers
+    </section>
+
+    <section>
+        <h2>A waveform viewer</h2>
+        <p>In simulation</p>
+        <img style="height:400px" src="images/waveform.png"/>
+    </section>
+
+    <section>
+        <h2>A logic analyzer</h2>
+        <p>For real hardware</p>
+        <img style="height:400px" src="images/logic-analyzer.gif"/>
+    </section>
+
+    <section>
+        <h2>Formal verification</h2>
+        <p>Proof that code matches spec or invariants hold, etc.</p>
+        <p>Limited to some blocks, e.g. FPU, cache controllers, etc.
+        <p>Needs invariants that can be proved</p>
+        <p>Tends to be manually intensive</p>
+        <aside class="notes">cannot be matched by testing</aside>
+    </section>
+
+    <section>
+        <h2>Pre-silicon testing</h2>
+        <p>Use a high-level specification ("golden model") for comparison, e.g. an instruction-accurate simulator (<i>ias</i>)
+        <p>Compare design's results with the <i>ias</i> after each instruction
+        <p>Run (pseudo) random programs on both</p>
+        <p>Simulated on thousands of machines in parallel (or customized hardware)</p>
+        <p>Finds a significant fraction of bugs</p>
+        <aside class="notes">Tape out only when "random runs for 5 days without errors" </aside>
+    </section>
+
+    <section>
+  <h2>Learning objectives</h2>
+    <p class="fragment"> Realize that debugging is a necessary CS skill</p>
+    <p class="fragment"> Learn to think systematically about debugging</p>
+    <p class="fragment"> Become expert at using debugging tools</p>
+    <p class="fragment"> Think about writing your own debugging tools</p>
+    <p class="fragment"> Think about design for debug in your programs</p>
+    <p class="fragment"> Get some exposure to research in debugging</p>
+    <p class="fragment"> Understand basics of hardware debugging (if time permits)</p>
+    </section>
+    <section>
+        <h2>Thank you</h2>
+        <h2>Discussion of bug logs?</h2>
+    </section>
+
+
+</div>
+    
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: false,
+				history: true,
+				center: true,
+slideNumber: true,
+
+				transition: 'fade', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true },
+					{ src: 'plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
